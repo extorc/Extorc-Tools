@@ -33,9 +33,26 @@ class SubSurfOp(Operator):
 
     def execute(self, context): 
         active = bpy.context.active_object
-        bpy.ops.object.modifier_add(type='SUBSURF')
-        return {'FINISHED'}        
+        try:
+            bpy.context.object.modifiers["Subdivision"].levels = bpy.context.object.modifiers["Subdivision"].levels + 1
+            print("done")
+        except:
+            bpy.ops.object.modifier_add(type='SUBSURF')
+        return {'FINISHED'} 
 
+class BoolOp(Operator):
+    """Quick Boolean Operation""" 
+    bl_idname = "extorctools.boolop" 
+    bl_label = "Bool Op"    
+    bl_options = {'REGISTER', 'UNDO'}
+    text = bpy.props.StringProperty(name = "enter", default = "")
+    def execute(self, context):
+        bpy.ops.object.modifier_add(type='BOOLEAN')
+        if self.text in bpy.data.objects:
+            bpy.context.active_object.modifiers["Boolean"].object = bpy.data.objects[self.text]
+        else:
+            print(f"object {self.text} Doesnt Exist")
+        return {'FINISHED'}
 class extorc_pie(Menu):
     bl_label = "Extorc Tools"
     bl_idname = "extorctoolspie"
@@ -45,6 +62,8 @@ class extorc_pie(Menu):
         pie.operator("extorctools.smoothop")
         pie = layout.menu_pie()
         pie.operator("extorctools.subsurfop")
+        pie = layout.menu_pie()
+        pie.operator("extorctools.boolop")
         
     
 class pie_operator(Operator):
@@ -70,6 +89,7 @@ def register():
     bpy.utils.register_class(extorc_pie)
     bpy.utils.register_class(pie_operator)
     bpy.utils.register_class(SubSurfOp)
+    bpy.utils.register_class(BoolOp)
     key_map(pie_operator)
     
 def unregister():
@@ -77,6 +97,7 @@ def unregister():
     bpy.utils.unregister_class(extorc_pie)
     bpy.utils.unregister_class(pie_operator)
     bpy.utils.unregister_class(SubSurfOp)
+    bpy.utils.unregister_class(BoolOp)
     remove_key_map()
 
 if __name__ == "__main__":
