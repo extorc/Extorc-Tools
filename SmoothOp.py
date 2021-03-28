@@ -6,20 +6,35 @@ bl_info = {
 
 import bpy
 from bpy import ops
-from bpy.types import Menu, Operator
-
+from bpy.types import Menu, Operator, Panel
 addon_keymaps = []
     
-class ShadeSmooth(Operator):
+class BoolOp(Operator):
+    """Quick Booelan Operation"""
+    bl_idname = "extorctools.boolop" 
+    bl_label = "Bool Op"    
+    bl_options = {'REGISTER', 'UNDO'}
     
+    def execute(self, context):
+        cutter = []
+        target = bpy.context.active_object
+        lis = bpy.context.selected_objects
+        for x in range(len(lis)):
+            if len(lis) == 1:
+                raise Exception("2 Objects must be selected")
+            elif not lis[x] == target:
+                cutter.append(lis[x])
+                break
+        new_mod = target.modifiers.new(name = f"dif" , type = 'BOOLEAN')
+        new_mod.object = cutter[0]
+        cutter[0].display_type = 'BOUNDS'
+        return {'FINISHED'}
+class ShadeSmooth(Operator):
     """Shade Smooth and Auto Smooth in one operator""" 
     bl_idname = "extorctools.smoothop" 
     bl_label = "Smooth Op"    
     bl_options = {'REGISTER', 'UNDO'}
-
     def execute(self, context): 
-        
-        active = bpy.context.active_object
         ops.object.shade_smooth()
         bpy.context.object.data.use_auto_smooth = True
         return {'FINISHED'}
@@ -32,27 +47,13 @@ class SubSurfOp(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context): 
-        active = bpy.context.active_object
         try:
             bpy.context.object.modifiers["Subdivision"].levels = bpy.context.object.modifiers["Subdivision"].levels + 1
-            print("done")
         except:
             bpy.ops.object.modifier_add(type='SUBSURF')
         return {'FINISHED'} 
-
-class BoolOp(Operator):
-    """Quick Boolean Operation""" 
-    bl_idname = "extorctools.boolop" 
-    bl_label = "Bool Op"    
-    bl_options = {'REGISTER', 'UNDO'}
-    text = bpy.props.StringProperty(name = "enter", default = "")
-    def execute(self, context):
-        bpy.ops.object.modifier_add(type='BOOLEAN')
-        if self.text in bpy.data.objects:
-            bpy.context.active_object.modifiers["Boolean"].object = bpy.data.objects[self.text]
-        else:
-            print(f"object {self.text} Doesnt Exist")
-        return {'FINISHED'}
+    
+    
 class extorc_pie(Menu):
     bl_label = "Extorc Tools"
     bl_idname = "extorctoolspie"
