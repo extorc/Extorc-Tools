@@ -5,10 +5,27 @@ bl_info = {
 }
 
 import bpy
-from bpy import ops
 from bpy.types import Menu, Operator, Panel
 addon_keymaps = []
-    
+   
+class MirrorOp(Operator):
+    """Quick Mirror Operation"""
+    bl_idname = "extorctools.mirrorop" 
+    bl_label = "Mirror Op"    
+    bl_options = {'REGISTER', 'UNDO'}
+    def execute(self, context):
+        cutter = []
+        target = bpy.context.active_object
+        lis = bpy.context.selected_objects
+        for x in range(len(lis)):
+            if len(lis) == 1:
+                raise Exception("2 Objects must be selected")
+            elif not lis[x] == target:
+                cutter.append(lis[x])
+                break
+        new_mod = target.modifiers.new(name = f"mir" , type = 'MIRROR')
+        new_mod.mirror_object = cutter[0]
+        return {'FINISHED'}
 class BoolOp(Operator):
     """Quick Booelan Operation"""
     bl_idname = "extorctools.boolop" 
@@ -34,8 +51,8 @@ class ShadeSmooth(Operator):
     bl_idname = "extorctools.smoothop" 
     bl_label = "Smooth Op"    
     bl_options = {'REGISTER', 'UNDO'}
-    def execute(self, context): 
-        ops.object.shade_smooth()
+    def execute(self, context):
+        bpy.ops.object.shade_smooth()
         bpy.context.object.data.use_auto_smooth = True
         return {'FINISHED'}
         
@@ -65,6 +82,8 @@ class extorc_pie(Menu):
         pie.operator("extorctools.subsurfop")
         pie = layout.menu_pie()
         pie.operator("extorctools.boolop")
+        pie = layout.menu_pie()
+        pie.operator("extorctools.mirrorop")
         
     
 class pie_operator(Operator):
@@ -91,6 +110,7 @@ def register():
     bpy.utils.register_class(pie_operator)
     bpy.utils.register_class(SubSurfOp)
     bpy.utils.register_class(BoolOp)
+    bpy.utils.register_class(MirrorOp)
     key_map(pie_operator)
     
 def unregister():
@@ -99,6 +119,7 @@ def unregister():
     bpy.utils.unregister_class(pie_operator)
     bpy.utils.unregister_class(SubSurfOp)
     bpy.utils.unregister_class(BoolOp)
+    bpy.utils.unregister_class(MirrorOp)
     remove_key_map()
 
 if __name__ == "__main__":
