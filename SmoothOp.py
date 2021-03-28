@@ -7,7 +7,7 @@ bl_info = {
 import bpy
 from bpy.types import Menu, Operator, Panel
 addon_keymaps = []
-   
+
 class MirrorOp(Operator):
     """Quick Mirror Operation"""
     bl_idname = "extorctools.mirrorop" 
@@ -26,9 +26,10 @@ class MirrorOp(Operator):
         new_mod = target.modifiers.new(name = f"mir" , type = 'MIRROR')
         new_mod.mirror_object = cutter[0]
         return {'FINISHED'}
-class BoolOp(Operator):
+    
+class BoolOp_Difference(Operator):
     """Quick Booelan Operation"""
-    bl_idname = "extorctools.boolop" 
+    bl_idname = "extorctools.boolop_dif" 
     bl_label = "Bool Op"    
     bl_options = {'REGISTER', 'UNDO'}
     
@@ -43,9 +44,54 @@ class BoolOp(Operator):
                 cutter.append(lis[x])
                 break
         new_mod = target.modifiers.new(name = f"dif" , type = 'BOOLEAN')
+        bpy.context.object.modifiers["dif"].operation = 'DIFFERENCE'
         new_mod.object = cutter[0]
         cutter[0].display_type = 'BOUNDS'
         return {'FINISHED'}
+    
+class BoolOp_Union(Operator):
+    """Quick Booelan Operation"""
+    bl_idname = "extorctools.boolop_un" 
+    bl_label = "Bool Op"    
+    bl_options = {'REGISTER', 'UNDO'}
+    
+    def execute(self, context):
+        cutter = []
+        target = bpy.context.active_object
+        lis = bpy.context.selected_objects
+        for x in range(len(lis)):
+            if len(lis) == 1:
+                raise Exception("2 Objects must be selected")
+            elif not lis[x] == target:
+                cutter.append(lis[x])
+                break
+        new_mod = target.modifiers.new(name = f"un" , type = 'BOOLEAN')
+        bpy.context.object.modifiers["un"].operation = 'UNION'
+        new_mod.object = cutter[0]
+        return {'FINISHED'}
+    
+class BoolOp_Intersect(Operator):
+    """Quick Booelan Operation"""
+    bl_idname = "extorctools.boolop_int" 
+    bl_label = "Bool Op"    
+    bl_options = {'REGISTER', 'UNDO'}
+    
+    def execute(self, context):
+        cutter = []
+        target = bpy.context.active_object
+        lis = bpy.context.selected_objects
+        for x in range(len(lis)):
+            if len(lis) == 1:
+                raise Exception("2 Objects must be selected")
+            elif not lis[x] == target:
+                cutter.append(lis[x])
+                break
+        new_mod = target.modifiers.new(name = f"int" , type = 'BOOLEAN')
+        bpy.context.object.modifiers["int"].operation = 'INTERSECT'
+        new_mod.object = cutter[0]
+        cutter[0].display_type = 'BOUNDS'
+        return {'FINISHED'}
+    
 class ShadeSmooth(Operator):
     """Shade Smooth and Auto Smooth in one operator""" 
     bl_idname = "extorctools.smoothop" 
@@ -70,7 +116,6 @@ class SubSurfOp(Operator):
             bpy.ops.object.modifier_add(type='SUBSURF')
         return {'FINISHED'} 
     
-    
 class extorc_pie(Menu):
     bl_label = "Extorc Tools"
     bl_idname = "extorctoolspie"
@@ -81,10 +126,11 @@ class extorc_pie(Menu):
         pie = layout.menu_pie()
         pie.operator("extorctools.subsurfop")
         pie = layout.menu_pie()
-        pie.operator("extorctools.boolop")
-        pie = layout.menu_pie()
         pie.operator("extorctools.mirrorop")
-        
+        col = pie.column()
+        col.operator("extorctools.boolop_int", text = "Intersect", icon = "SELECT_INTERSECT")
+        col.operator("extorctools.boolop_un", text = "Union", icon = "SELECT_EXTEND")
+        col.operator("extorctools.boolop_dif", text = "Difference", icon = "SELECT_DIFFERENCE")    
     
 class pie_operator(Operator):
     bl_label = "Pie Caller"
@@ -109,7 +155,9 @@ def register():
     bpy.utils.register_class(extorc_pie)
     bpy.utils.register_class(pie_operator)
     bpy.utils.register_class(SubSurfOp)
-    bpy.utils.register_class(BoolOp)
+    bpy.utils.register_class(BoolOp_Difference)
+    bpy.utils.register_class(BoolOp_Union)
+    bpy.utils.register_class(BoolOp_Intersect)
     bpy.utils.register_class(MirrorOp)
     key_map(pie_operator)
     
@@ -118,10 +166,11 @@ def unregister():
     bpy.utils.unregister_class(extorc_pie)
     bpy.utils.unregister_class(pie_operator)
     bpy.utils.unregister_class(SubSurfOp)
-    bpy.utils.unregister_class(BoolOp)
+    bpy.utils.unregister_class(BoolOp_Difference)
+    bpy.utils.unregister_class(BoolOp_Union)
+    bpy.utils.unregister_class(BoolOp_Intersect)
     bpy.utils.unregister_class(MirrorOp)
     remove_key_map()
 
 if __name__ == "__main__":
     register()
-    
