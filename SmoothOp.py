@@ -8,6 +8,18 @@ import bpy
 from bpy.types import Menu, Operator, Panel
 addon_keymaps = []
 
+def getContext(context):
+    target = bpy.context.active_object
+    lis = bpy.context.selected_objects
+    return target, lis
+def dup():
+    scene=bpy.context.scene
+    active = bpy.context.active_object
+    data = active.data
+    new = bpy.data.objects.new(name = active.name, object_data = data)
+    bpy.context.collection.objects.link(new)
+    return new
+
 class MirrorOp(Operator):
     """Quick Mirror Operation"""
     bl_idname = "extorctools.mirrorop" 
@@ -15,8 +27,7 @@ class MirrorOp(Operator):
     bl_options = {'REGISTER', 'UNDO'}
     def execute(self, context):
         cutter = []
-        target = bpy.context.active_object
-        lis = bpy.context.selected_objects
+        target  , lis = getContext(context)
         for x in range(len(lis)):
             if len(lis) == 1:
                 raise Exception("2 Objects must be selected")
@@ -26,17 +37,42 @@ class MirrorOp(Operator):
         new_mod = target.modifiers.new(name = f"mir" , type = 'MIRROR')
         new_mod.mirror_object = cutter[0]
         return {'FINISHED'}
+
+class BoolOp_Slice(Operator):
+    """Quick Slice Operation"""
+    bl_idname = "extorctools.boolop_sli" 
+    bl_label = "Bool Op"    
+    bl_options = {'REGISTER', 'UNDO'}
     
+    def execute(self, context):
+        cutter = []
+        target , lis = getContext(context)
+        for x in range(len(lis)):
+            if len(lis) == 1:
+                raise Exception("2 Objects must be selected")
+            elif not lis[x] == target:
+                cutter.append(lis[x])
+                break
+        new_mod = target.modifiers.new(name = f"dif" , type = 'BOOLEAN')
+        bpy.context.object.modifiers["dif"].operation = 'DIFFERENCE'
+        new_mod.object = cutter[0]
+        cutter[0].display_type = 'BOUNDS'
+        new = dup()
+        target , lis = getContext(context)
+        new_mod = new.modifiers.new(name = f"dif" , type = 'BOOLEAN')
+        bpy.context.object.modifiers["dif"].operation = 'INTERSECT'
+        new_mod.object = cutter[0]
+        return {'FINISHED'}
+
 class BoolOp_Difference(Operator):
-    """Quick Booelan Operation"""
+    """Quick Difference Operation"""
     bl_idname = "extorctools.boolop_dif" 
     bl_label = "Bool Op"    
     bl_options = {'REGISTER', 'UNDO'}
     
     def execute(self, context):
         cutter = []
-        target = bpy.context.active_object
-        lis = bpy.context.selected_objects
+        target , lis = getContext(context)
         for x in range(len(lis)):
             if len(lis) == 1:
                 raise Exception("2 Objects must be selected")
@@ -50,15 +86,14 @@ class BoolOp_Difference(Operator):
         return {'FINISHED'}
     
 class BoolOp_Union(Operator):
-    """Quick Booelan Operation"""
+    """Quick Union Operation"""
     bl_idname = "extorctools.boolop_un" 
     bl_label = "Bool Op"    
     bl_options = {'REGISTER', 'UNDO'}
     
     def execute(self, context):
         cutter = []
-        target = bpy.context.active_object
-        lis = bpy.context.selected_objects
+        target , lis = getContext(context)
         for x in range(len(lis)):
             if len(lis) == 1:
                 raise Exception("2 Objects must be selected")
@@ -71,15 +106,14 @@ class BoolOp_Union(Operator):
         return {'FINISHED'}
     
 class BoolOp_Intersect(Operator):
-    """Quick Booelan Operation"""
+    """Quick Untersect Operation"""
     bl_idname = "extorctools.boolop_int" 
     bl_label = "Bool Op"    
     bl_options = {'REGISTER', 'UNDO'}
     
     def execute(self, context):
         cutter = []
-        target = bpy.context.active_object
-        lis = bpy.context.selected_objects
+        target , lis = getContext(context)
         for x in range(len(lis)):
             if len(lis) == 1:
                 raise Exception("2 Objects must be selected")
@@ -130,6 +164,7 @@ class extorc_pie(Menu):
         col = pie.column()
         col.operator("extorctools.boolop_int", text = "Intersect", icon = "SELECT_INTERSECT")
         col.operator("extorctools.boolop_un", text = "Union", icon = "SELECT_EXTEND")
+        col.operator("extorctools.boolop_sli", text = "Slice", icon = "META_BALL")
         col.operator("extorctools.boolop_dif", text = "Difference", icon = "SELECT_DIFFERENCE")    
     
 class pie_operator(Operator):
@@ -158,6 +193,7 @@ def register():
     bpy.utils.register_class(BoolOp_Difference)
     bpy.utils.register_class(BoolOp_Union)
     bpy.utils.register_class(BoolOp_Intersect)
+    bpy.utils.register_class(BoolOp_Slice)
     bpy.utils.register_class(MirrorOp)
     key_map(pie_operator)
     
@@ -169,6 +205,7 @@ def unregister():
     bpy.utils.unregister_class(BoolOp_Difference)
     bpy.utils.unregister_class(BoolOp_Union)
     bpy.utils.unregister_class(BoolOp_Intersect)
+    bpy.utils.unregister_class(BoolOp_Slice)
     bpy.utils.unregister_class(MirrorOp)
     remove_key_map()
 
