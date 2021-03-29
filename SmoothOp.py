@@ -12,6 +12,7 @@ def getContext(context):
     target = bpy.context.active_object
     lis = bpy.context.selected_objects
     return target, lis
+
 def dup():
     scene=bpy.context.scene
     active = bpy.context.active_object
@@ -20,6 +21,42 @@ def dup():
     bpy.context.collection.objects.link(new)
     return new
 
+class OriginOp_Geo(Operator):
+    """Quick Origin Transfer to Geometry"""
+    bl_idname = "extorctools.originop_geo" 
+    bl_label = "OriginOp Geo"    
+    bl_options = {'REGISTER', 'UNDO'}
+    def execute(self, context):
+        bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='MEDIAN')
+        return {'FINISHED'}
+
+class OriginOp_Cur(Operator):
+    """Quick Origin Transfer to Geometry"""
+    bl_idname = "extorctools.originop_cur" 
+    bl_label = "OriginOp Cursor"    
+    bl_options = {'REGISTER', 'UNDO'}
+    def execute(self, context):
+        bpy.ops.object.origin_set(type='ORIGIN_CURSOR', center='MEDIAN')
+        return {'FINISHED'}
+    
+class OriginOp_COS(Operator):
+    """Quick Origin Transfer to Geometry"""
+    bl_idname = "extorctools.originop_cos" 
+    bl_label = "OriginOp Surface"    
+    bl_options = {'REGISTER', 'UNDO'}
+    def execute(self, context):
+       bpy.ops.object.origin_set(type='ORIGIN_CENTER_OF_MASS', center='MEDIAN')
+       return {'FINISHED'}
+    
+class OriginOp_COV(Operator):
+    """Quick Origin Transfer to Geometry"""
+    bl_idname = "extorctools.originop_cov" 
+    bl_label = "OriginOp Volume"    
+    bl_options = {'REGISTER', 'UNDO'}
+    def execute(self, context):
+        bpy.ops.object.origin_set(type='ORIGIN_CENTER_OF_VOLUME', center='MEDIAN')
+        return {'FINISHED'}
+    
 class MirrorOp(Operator):
     """Quick Mirror Operation"""
     bl_idname = "extorctools.mirrorop" 
@@ -161,6 +198,12 @@ class extorc_pie(Menu):
         pie.operator("extorctools.subsurfop")
         pie = layout.menu_pie()
         pie.operator("extorctools.mirrorop")
+        pie = layout.menu_pie()
+        col2 = pie.column()
+        col2.operator("extorctools.originop_geo")
+        col2.operator("extorctools.originop_cur")
+        col2.operator("extorctools.originop_cos")
+        col2.operator("extorctools.originop_cov")
         col = pie.column()
         col.operator("extorctools.boolop_int", text = "Intersect", icon = "SELECT_INTERSECT")
         col.operator("extorctools.boolop_un", text = "Union", icon = "SELECT_EXTEND")
@@ -195,6 +238,10 @@ def register():
     bpy.utils.register_class(BoolOp_Intersect)
     bpy.utils.register_class(BoolOp_Slice)
     bpy.utils.register_class(MirrorOp)
+    bpy.utils.register_class(OriginOp_Geo)
+    bpy.utils.register_class(OriginOp_Cur)
+    bpy.utils.register_class(OriginOp_COS)
+    bpy.utils.register_class(OriginOp_COV)
     key_map(pie_operator)
     
 def unregister():
@@ -207,6 +254,10 @@ def unregister():
     bpy.utils.unregister_class(BoolOp_Intersect)
     bpy.utils.unregister_class(BoolOp_Slice)
     bpy.utils.unregister_class(MirrorOp)
+    bpy.utils.unregister_class(OriginOp_Geo)
+    bpy.utils.unregister_class(OriginOp_Cur)
+    bpy.utils.unregister_class(OriginOp_COS)
+    bpy.utils.unregister_class(OriginOp_COV)
     remove_key_map()
 
 if __name__ == "__main__":
