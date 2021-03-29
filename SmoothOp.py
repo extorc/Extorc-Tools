@@ -78,7 +78,7 @@ class MirrorOp(Operator):
 class BoolOp_Slice(Operator):
     """Quick Slice Operation"""
     bl_idname = "extorctools.boolop_sli" 
-    bl_label = "Bool Op"    
+    bl_label = "Slice Op"    
     bl_options = {'REGISTER', 'UNDO'}
     
     def execute(self, context):
@@ -104,7 +104,7 @@ class BoolOp_Slice(Operator):
 class BoolOp_Difference(Operator):
     """Quick Difference Operation"""
     bl_idname = "extorctools.boolop_dif" 
-    bl_label = "Bool Op"    
+    bl_label = "Dif Op"    
     bl_options = {'REGISTER', 'UNDO'}
     
     def execute(self, context):
@@ -125,7 +125,7 @@ class BoolOp_Difference(Operator):
 class BoolOp_Union(Operator):
     """Quick Union Operation"""
     bl_idname = "extorctools.boolop_un" 
-    bl_label = "Bool Op"    
+    bl_label = "Union Op"    
     bl_options = {'REGISTER', 'UNDO'}
     
     def execute(self, context):
@@ -145,7 +145,7 @@ class BoolOp_Union(Operator):
 class BoolOp_Intersect(Operator):
     """Quick Untersect Operation"""
     bl_idname = "extorctools.boolop_int" 
-    bl_label = "Bool Op"    
+    bl_label = "Intersect Op"    
     bl_options = {'REGISTER', 'UNDO'}
     
     def execute(self, context):
@@ -186,7 +186,21 @@ class SubSurfOp(Operator):
         except:
             bpy.ops.object.modifier_add(type='SUBSURF')
         return {'FINISHED'} 
-    
+class bool_pie(Menu):
+    bl_label = "Bool Tools"
+    bl_idname = "extorctoolspie_bool"
+    def draw(self, context):
+        layout = self.layout
+        pie = layout.menu_pie()
+        pie.operator("extorctools.boolop_int")
+        pie = layout.menu_pie()
+        pie.operator("extorctools.boolop_un")
+        pie = layout.menu_pie()
+        pie.operator("extorctools.boolop_dif")
+        pie = layout.menu_pie()
+        pie.operator("extorctools.boolop_sli")
+        
+        
 class extorc_pie(Menu):
     bl_label = "Extorc Tools"
     bl_idname = "extorctoolspie"
@@ -199,22 +213,32 @@ class extorc_pie(Menu):
         pie = layout.menu_pie()
         pie.operator("extorctools.mirrorop")
         pie = layout.menu_pie()
+        pie.operator("org.extorctools_bool")
+        pie = layout.menu_pie()
         col2 = pie.column()
         col2.operator("extorctools.originop_geo")
         col2.operator("extorctools.originop_cur")
         col2.operator("extorctools.originop_cos")
         col2.operator("extorctools.originop_cov")
         col = pie.column()
-        col.operator("extorctools.boolop_int", text = "Intersect", icon = "SELECT_INTERSECT")
-        col.operator("extorctools.boolop_un", text = "Union", icon = "SELECT_EXTEND")
-        col.operator("extorctools.boolop_sli", text = "Slice", icon = "META_BALL")
-        col.operator("extorctools.boolop_dif", text = "Difference", icon = "SELECT_DIFFERENCE")    
-    
+#        col.operator("extorctools.boolop_int", text = "Intersect", icon = "SELECT_INTERSECT")
+#        col.operator("extorctools.boolop_un", text = "Union", icon = "SELECT_EXTEND")
+#        col.operator("extorctools.boolop_sli", text = "Slice", icon = "META_BALL")
+#        col.operator("extorctools.boolop_dif", text = "Difference", icon = "SELECT_DIFFERENCE")    
+
 class pie_operator(Operator):
     bl_label = "Pie Caller"
     bl_idname = "org.extorctools" 
     def execute(self, context):
         bpy.ops.wm.call_menu_pie(name="extorctoolspie")
+        return {'FINISHED'}
+    
+class bool_operator(Operator):
+    """Boolean Tools Menu"""
+    bl_label = "Bool Op"
+    bl_idname = "org.extorctools_bool" 
+    def execute(self, context):
+        bpy.ops.wm.call_menu_pie(name="extorctoolspie_bool")
         return {'FINISHED'}
 
 def key_map(operator):
@@ -242,6 +266,8 @@ def register():
     bpy.utils.register_class(OriginOp_Cur)
     bpy.utils.register_class(OriginOp_COS)
     bpy.utils.register_class(OriginOp_COV)
+    bpy.utils.register_class(bool_operator)
+    bpy.utils.register_class(bool_pie)
     key_map(pie_operator)
     
 def unregister():
@@ -258,6 +284,8 @@ def unregister():
     bpy.utils.unregister_class(OriginOp_Cur)
     bpy.utils.unregister_class(OriginOp_COS)
     bpy.utils.unregister_class(OriginOp_COV)
+    bpy.utils.unregister_class(bool_operator)
+    bpy.utils.unregister_class(bool_pie)
     remove_key_map()
 
 if __name__ == "__main__":
