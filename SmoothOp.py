@@ -113,7 +113,20 @@ class bool_pie(Menu):
         pie = layout.menu_pie()
         pie.operator("btool.boolean_slice", text = "Slice Op")
         
-        
+class origin_pie(Menu):
+    bl_label = "Origin Tools"
+    bl_idname = "extorctoolspie_origin"
+    def draw(self, context):
+        layout = self.layout
+        pie = layout.menu_pie()
+        pie.operator("extorctools.originop_cov", text = "Center of Volume")
+        pie = layout.menu_pie()
+        pie.operator("extorctools.originop_cos", text = "Center of Surface")
+        pie = layout.menu_pie()
+        pie.operator("extorctools.originop_cur", text = "Cursor")
+        pie = layout.menu_pie()
+        pie.operator("extorctools.originop_geo", text = "Center of Geometry")
+
 class extorc_pie(Menu):
     bl_label = "Extorc Tools"
     bl_idname = "extorctoolspie"
@@ -128,13 +141,9 @@ class extorc_pie(Menu):
         pie = layout.menu_pie()
         pie.operator("org.extorctools_bool")
         pie = layout.menu_pie()
-        col2 = pie.column()
-        col2.operator("extorctools.originop_geo")
-        col2.operator("extorctools.originop_cur")
-        col2.operator("extorctools.originop_cos")
-        col2.operator("extorctools.originop_cov")
-        col = pie.column()
-
+        pie.operator("org.extorctools_origin")
+        pie = layout.menu_pie()
+        
 class pie_operator(Operator):
     bl_label = "Pie Caller"
     bl_idname = "org.extorctools" 
@@ -148,6 +157,13 @@ class bool_operator(Operator):
     bl_idname = "org.extorctools_bool" 
     def execute(self, context):
         bpy.ops.wm.call_menu_pie(name="extorctoolspie_bool")
+        return {'FINISHED'}
+class origin_operator(Operator):
+    """Origin Tools Menu"""
+    bl_label = "Origin Op"
+    bl_idname = "org.extorctools_origin" 
+    def execute(self, context):
+        bpy.ops.wm.call_menu_pie(name="extorctoolspie_origin")
         return {'FINISHED'}
 
 def key_map(operator):
@@ -173,6 +189,8 @@ def register():
     bpy.utils.register_class(OriginOp_COV)
     bpy.utils.register_class(bool_operator)
     bpy.utils.register_class(bool_pie)
+    bpy.utils.register_class(origin_operator)
+    bpy.utils.register_class(origin_pie)
     key_map(pie_operator)
     
 def unregister():
@@ -187,6 +205,8 @@ def unregister():
     bpy.utils.unregister_class(OriginOp_COV)
     bpy.utils.unregister_class(bool_operator)
     bpy.utils.unregister_class(bool_pie)
+    bpy.utils.unregister_class(origin_operator)
+    bpy.utils.unregister_class(origin_pie)
     remove_key_map()
 
 if __name__ == "__main__":
