@@ -8,18 +8,30 @@ import bpy
 from bpy.types import Menu, Operator, Panel
 addon_keymaps = []
 
+class wireFrame(Operator):
+    """Quick Origin Transfer to Geometry"""
+    bl_idname = "extorctools.wire" 
+    bl_label = "Wire Geo"    
+    bl_options = {'REGISTER', 'UNDO'}
+    def execute(self, context):
+        bpy.context.object.show_wire = not bpy.context.object.show_wire
+        return {"FINISHED"}
+    
+class removeDoubles(Operator):
+    """Quick double geo removal"""
+    bl_idname = "extorctools.removedoubles" 
+    bl_label = "No Double Geo"    
+    bl_options = {'REGISTER', 'UNDO'}
+    def execute(self, context):
+        bpy.ops.object.editmode_toggle()
+        bpy.ops.mesh.remove_doubles()
+        bpy.ops.object.editmode_toggle()
+        return {"FINISHED"}
+
 def getContext(context):
     target = bpy.context.active_object
     lis = bpy.context.selected_objects
     return target, lis
-
-def dup():
-    scene=bpy.context.scene
-    active = bpy.context.active_object
-    data = active.data
-    new = bpy.data.objects.new(name = active.name, object_data = data)
-    bpy.context.collection.objects.link(new)
-    return new
 
 class OriginOp_Geo(Operator):
     """Quick Origin Transfer to Geometry"""
@@ -126,7 +138,7 @@ class origin_pie(Menu):
         pie.operator("extorctools.originop_cur", text = "Cursor")
         pie = layout.menu_pie()
         pie.operator("extorctools.originop_geo", text = "Center of Geometry")
-
+        
 class extorc_pie(Menu):
     bl_label = "Extorc Tools"
     bl_idname = "extorctoolspie"
@@ -142,13 +154,30 @@ class extorc_pie(Menu):
         pie.operator("org.extorctools_bool")
         pie = layout.menu_pie()
         pie.operator("org.extorctools_origin")
-        pie = layout.menu_pie()
         
 class pie_operator(Operator):
     bl_label = "Pie Caller"
     bl_idname = "org.extorctools" 
     def execute(self, context):
         bpy.ops.wm.call_menu_pie(name="extorctoolspie")
+        return {'FINISHED'}
+    
+class extorc_pie_two(Menu):
+    bl_label = "Deep Ops"
+    bl_idname = "extorctoolspie_two"
+    def draw(self, context):
+        layout = self.layout
+        pie = layout.menu_pie()
+        pie.operator("extorctools.wire")
+        pie = layout.menu_pie()
+        pie.operator("extorctools.removedoubles")
+
+          
+class pie_operator_two(Operator):
+    bl_label = "Pie Caller"
+    bl_idname = "org.extorctools_two" 
+    def execute(self, context):
+        bpy.ops.wm.call_menu_pie(name="extorctoolspie_two")
         return {'FINISHED'}
     
 class bool_operator(Operator):
@@ -158,6 +187,7 @@ class bool_operator(Operator):
     def execute(self, context):
         bpy.ops.wm.call_menu_pie(name="extorctoolspie_bool")
         return {'FINISHED'}
+    
 class origin_operator(Operator):
     """Origin Tools Menu"""
     bl_label = "Origin Op"
@@ -166,10 +196,10 @@ class origin_operator(Operator):
         bpy.ops.wm.call_menu_pie(name="extorctoolspie_origin")
         return {'FINISHED'}
 
-def key_map(operator):
+def key_map(operator, key):
     wm = bpy.context.window_manager
     km = wm.keyconfigs.addon.keymaps.new(name='Object Mode', space_type='EMPTY')
-    kmi = km.keymap_items.new(operator.bl_idname, 'D', 'PRESS', ctrl=True, shift=False)
+    kmi = km.keymap_items.new(operator.bl_idname, key, 'PRESS', ctrl=True, shift=False)
     addon_keymaps.append((km, kmi))   
    
 def remove_key_map():
@@ -191,7 +221,12 @@ def register():
     bpy.utils.register_class(bool_pie)
     bpy.utils.register_class(origin_operator)
     bpy.utils.register_class(origin_pie)
-    key_map(pie_operator)
+    bpy.utils.register_class(wireFrame)
+    bpy.utils.register_class(extorc_pie_two)
+    bpy.utils.register_class(pie_operator_two)
+    bpy.utils.register_class(removeDoubles)
+    key_map(pie_operator, "D")
+    key_map(pie_operator_two, "W")
     
 def unregister():
     bpy.utils.unregister_class(ShadeSmooth)
@@ -207,6 +242,10 @@ def unregister():
     bpy.utils.unregister_class(bool_pie)
     bpy.utils.unregister_class(origin_operator)
     bpy.utils.unregister_class(origin_pie)
+    bpy.utils.unregister_class(wireFrame)
+    bpy.utils.unregister_class(extorc_pie_two)
+    bpy.utils.unregister_class(pie_operator_two)
+    bpy.utils.unregister_class(removeDoubles)
     remove_key_map()
 
 if __name__ == "__main__":
