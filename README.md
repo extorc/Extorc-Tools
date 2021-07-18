@@ -1,6 +1,5 @@
 # Extorc-Tools
-This is an addon i have been working on for a few days now<br>
-I dont have much Blender API experience but i love the way this addon is coming out to be
+This is an addon i have made for easy of operations in blender and composition af alot of usefull blender tools at one menu<br>
 
 # To Use : 
 Download the python File<br>
